@@ -4,6 +4,7 @@
 #include <vector>
 #include <unistd.h>
 #include <unordered_map>
+#include <fstream>
 #include <cstdint>
 
 namespace ns_index
@@ -38,17 +39,52 @@ namespace ns_index
         ~Index() {}
         DocInfo *GetforwardIndex(const uint64_t &doc_id)
         {
-            return nullptr;
+            if (doc_id >= forward_index.size())
+            {
+                std::cerr << "doc id out range, error" << std::endl;
+                return nullptr;
+            }
+            return &forward_index[doc_id];
         }
 
         InvertedList *GetInvertedList(const std::string &word)
         {
-            return nullptr;
+            if (inverted_index.find(word) == inverted_index.end())
+            {
+                std::cerr << word << " have no InvertedList" << std::endl;
+                return nullptr;
+            }
+            return &inverted_index[word];
         }
 
         bool BuildIndex(const std::string &input)
         {
+            std::ifstream in(input, std::ios::in | std::ios::binary);
+            if (!in.is_open())
+            {
+                std::cerr << "open file " << input << " failed" << std::endl;
+                return false;
+            }
+            std::string line;
+            while (std::getline(in, line))
+            {
+                DocInfo *doc = BuildForwardIndex(line);
+                if (doc == nullptr)
+                {
+                    std::cerr << "build " << line << " error" << std::endl;
+                    continue;
+                }
+                BuildInvertedIndex(*doc);
+            }
             return true;
+        }
+
+        DocInfo *BuildForwardIndex(const std::string &line)
+        {
+        }
+
+        bool BuildInvertedIndex(const DocInfo doc)
+        {
         }
     };
 }
