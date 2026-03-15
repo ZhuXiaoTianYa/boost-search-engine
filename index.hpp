@@ -50,21 +50,15 @@ namespace ns_index
 
         static Index *GetInstance()
         {
-            std::cout << "1" << std::endl;
             if (instance == nullptr)
             {
-                std::cout << "2" << std::endl;
                 mtx.lock();
-                std::cout << "3" << std::endl;
                 if (instance == nullptr)
                 {
-                    std::cout << "4" << std::endl;
                     instance = new Index();
-                    std::cout << "5" << std::endl;
                 }
                 mtx.unlock();
             }
-            std::cout << "6" << std::endl;
             return instance;
         }
 
@@ -126,7 +120,7 @@ namespace ns_index
         {
             std::vector<std::string> results;
             const std::string sep = "\3";
-            ns_util::StringUtil::CutString(line, &results, sep);
+            ns_util::StringUtil::Split(line, &results, sep);
             if (results.size() != 3)
             {
                 return nullptr;

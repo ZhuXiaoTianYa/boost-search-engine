@@ -56,13 +56,42 @@ namespace ns_searcher
                 }
                 Json::Value elem;
                 elem["title"] = doc->title;
-                elem["desc"] = doc->content;
+                elem["desc"] = GetDesc(doc->content, item.word);
                 elem["url"] = doc->url;
+
+                // elem["id"] = doc->doc_id;
+                // elem["weight"] = item.weight;
                 root.append(elem);
             }
             Json::StyledWriter writer;
             *json_string = writer.write(root);
             return;
+        }
+
+        std::string GetDesc(const std::string &html_content, const std::string &word)
+        {
+            const size_t prev_step = 50;
+            const size_t next_step = 100;
+            int start = 0;
+            int end = html_content.size() - 1;
+            auto iter = std::search(html_content.begin(), html_content.end(), word.begin(), word.end(), [](const int &a, const int &b){ return std::tolower(a) == std::tolower(b); });
+            if (iter == html_content.end())
+            {
+                return "None1";
+            }
+            int pos = std::distance(html_content.begin(), iter);
+
+            if (pos > start + prev_step)
+                start = pos - prev_step;
+
+            if (pos + next_step < end)
+                end = pos + next_step;
+
+            if (start >= end)
+            {
+                return "None2";
+            }
+            return html_content.substr(start, end - start);
         }
     };
 }
