@@ -19,13 +19,8 @@ namespace ns_searcher
         {
             std::cout << "获取index单例..." << std::endl;
             index = ns_index::Index::GetInstance();
-            std::cout << "7" << std::endl;
-            if (index == nullptr)
-            {
-                std::cout << "8" << std::endl;
-            }
             index->BuildIndex(input);
-            std::cout << "构建索引..." << std::endl;
+            std::cout << "构建索引成功..." << std::endl;
         }
 
         void Search(const std::string &query, std::string *json_string)
@@ -58,7 +53,7 @@ namespace ns_searcher
                 elem["title"] = doc->title;
                 elem["desc"] = GetDesc(doc->content, item.word);
                 elem["url"] = doc->url;
-
+                // for debug
                 // elem["id"] = doc->doc_id;
                 // elem["weight"] = item.weight;
                 root.append(elem);
@@ -74,7 +69,8 @@ namespace ns_searcher
             const size_t next_step = 100;
             int start = 0;
             int end = html_content.size() - 1;
-            auto iter = std::search(html_content.begin(), html_content.end(), word.begin(), word.end(), [](const int &a, const int &b){ return std::tolower(a) == std::tolower(b); });
+            auto iter = std::search(html_content.begin(), html_content.end(), word.begin(), word.end(), [](const int &a, const int &b)
+                                    { return std::tolower(a) == std::tolower(b); });
             if (iter == html_content.end())
             {
                 return "None1";

@@ -110,7 +110,7 @@ namespace ns_index
                 BuildInvertedIndex(*doc);
                 if (count % 50 == 0)
                 {
-                    std::cout << "正在索引文件: " << count << std::endl;
+                    std::cout << "正在构建索引文件: " << count << std::endl;
                 }
             }
             return true;
