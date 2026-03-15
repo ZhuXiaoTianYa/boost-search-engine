@@ -42,36 +42,37 @@ namespace ns_index
         Index &operator=(const Index &) = delete;
 
     private:
-        // static Index *instance;
+        static Index *instance;
         static std::mutex mtx;
 
     public:
         ~Index() {}
 
-        // static Index *GetInstance()
-        // {
-        //     std::cout << "1" << std::endl;
-        //     if (instance == nullptr)
-        //     {
-        //         std::cout << "2" << std::endl;
-        //         mtx.lock();
-        //         std::cout << "3" << std::endl;
-        //         if (instance == nullptr)
-        //         {
-        //             std::cout << "4" << std::endl;
-        //             instance = new Index();
-        //             std::cout << "5" << std::endl;
-        //         }
-        //         mtx.unlock();
-        //     }
-        //     std::cout << "6" << std::endl;
-        //     return instance;
-        // }
         static Index *GetInstance()
         {
-            static Index instance;
-            return &instance;
+            std::cout << "1" << std::endl;
+            if (instance == nullptr)
+            {
+                std::cout << "2" << std::endl;
+                mtx.lock();
+                std::cout << "3" << std::endl;
+                if (instance == nullptr)
+                {
+                    std::cout << "4" << std::endl;
+                    instance = new Index();
+                    std::cout << "5" << std::endl;
+                }
+                mtx.unlock();
+            }
+            std::cout << "6" << std::endl;
+            return instance;
         }
+
+        // static Index *GetInstance()
+        // {
+        //     static Index instance;
+        //     return &instance;
+        // }
 
         DocInfo *GetforwardIndex(const uint64_t &doc_id)
         {
@@ -176,5 +177,5 @@ namespace ns_index
         }
     };
     std::mutex Index::mtx;
-    // Index *Index::instance = nullptr;
+    Index *Index::instance = nullptr;
 }
