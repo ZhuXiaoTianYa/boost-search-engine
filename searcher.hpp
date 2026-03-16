@@ -5,6 +5,15 @@
 
 namespace ns_searcher
 {
+
+    struct InvertedElemPrint
+    {
+        uint64_t doc_id;
+        int weight;
+        std::vector<std::string> words;
+        InvertedElemPrint() : doc_id(0), weight(0) {}
+    };
+
     class Searcher
     {
     private:
@@ -27,7 +36,9 @@ namespace ns_searcher
         {
             std::vector<std::string> words;
             ns_util::JiebaUtil::CutString(query, &words);
-            ns_index::InvertedList inverted_list_all;
+            // ns_index::InvertedList inverted_list_all;
+            std::vector<InvertedElemPrint> inverted_list_all;
+            std::unordered_map<uint64_t, InvertedElemPrint> tokens_map;
             for (std::string word : words)
             {
                 boost::to_lower(word);
@@ -36,9 +47,24 @@ namespace ns_searcher
                 {
                     continue;
                 }
-                inverted_list_all.insert(inverted_list_all.end(), inverted_list->begin(), inverted_list->end());
+                for (const auto &elem : *inverted_list)
+                {
+                    auto &item = tokens_map[elem.doc_id];
+                    item.doc_id = elem.doc_id;
+                    item.weight += elem.weight;
+                    item.words.push_back(elem.word);
+                }
+                // inverted_list_all.insert(inverted_list_all.end(), inverted_list->begin(), inverted_list->end());
             }
-            std::sort(inverted_list_all.begin(), inverted_list_all.end(), [](const ns_index::InvertedElem &e1, const ns_index::InvertedElem &e2)
+
+            for (const auto &item : tokens_map)
+            {
+                inverted_list_all.push_back(std::move(item.second));
+            }
+            // std::sort(inverted_list_all.begin(), inverted_list_all.end(), [](const ns_index::InvertedElem &e1, const ns_index::InvertedElem &e2)
+            //           { return e1.weight > e2.weight; });
+
+            std::sort(inverted_list_all.begin(), inverted_list_all.end(), [](const InvertedElemPrint &e1, const InvertedElemPrint &e2)
                       { return e1.weight > e2.weight; });
 
             Json::Value root;
@@ -51,7 +77,7 @@ namespace ns_searcher
                 }
                 Json::Value elem;
                 elem["title"] = doc->title;
-                elem["desc"] = GetDesc(doc->content, item.word);
+                elem["desc"] = GetDesc(doc->content, item.words[0]);
                 elem["url"] = doc->url;
                 // for debug
                 // elem["id"] = doc->doc_id;

@@ -48,13 +48,72 @@ namespace ns_util
     class JiebaUtil
     {
     private:
-        static cppjieba::Jieba jieba;
+        cppjieba::Jieba jieba;
+        static JiebaUtil *instance;
+        std::unordered_map<std::string, bool> stop_words;
+
+    private:
+        JiebaUtil()
+            : jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH, IDF_PATH, STOP_WORD_PATH)
+        {
+            InitJiebaUtil();
+        }
+        JiebaUtil(const JiebaUtil &) = delete;
+        JiebaUtil &operator=(const JiebaUtil &) = delete;
 
     public:
-        static void CutString(const std::string &str, std::vector<std::string> *out)
+        static JiebaUtil *GetInstance()
+        {
+            if (instance == nullptr)
+            {
+                static std::mutex mtx;
+                mtx.lock();
+                if (instance == nullptr)
+                {
+                    instance = new JiebaUtil();
+                }
+                mtx.unlock();
+            }
+            return instance;
+        }
+
+        void InitJiebaUtil()
+        {
+            std::ifstream ifs(STOP_WORD_PATH);
+            if (!ifs.is_open())
+            {
+                std::cerr << "open file " << STOP_WORD_PATH << " fail" << std::endl;
+                return;
+            }
+            std::string line;
+            while (std::getline(ifs, line))
+            {
+                stop_words.insert({line, true});
+            }
+            ifs.close();
+        }
+
+    public:
+        void CutStringHelper(const std::string &str, std::vector<std::string> *out)
         {
             jieba.CutForSearch(str, *out);
+            for (std::vector<std::string>::iterator iter = out->begin(); iter != out->end();)
+            {
+                if (stop_words.find(*iter) != stop_words.end())
+                {
+                    iter = out->erase(iter);
+                }
+                else
+                {
+                    iter++;
+                }
+            }
+        }
+
+        static void CutString(const std::string &str, std::vector<std::string> *out)
+        {
+            GetInstance()->CutStringHelper(str, out);
         }
     };
-    cppjieba::Jieba JiebaUtil::jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH, IDF_PATH, STOP_WORD_PATH);
+    JiebaUtil *JiebaUtil::instance = nullptr;
 }
