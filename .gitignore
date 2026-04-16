@@ -1,5 +1,4 @@
 data/input/*
-data/raw_html/raw.bin
 debug
 parser
 http_server
